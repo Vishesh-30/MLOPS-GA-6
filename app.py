@@ -7,6 +7,7 @@ import joblib
 app = FastAPI()
 model = joblib.load("iris-classifier-week-1_model.joblib")
 
+# adding a comment for testing
 class IrisInput(BaseModel):
     sepal_length: float
     sepal_width: float
