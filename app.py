@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import pandas as pd
 import joblib
 
+# creating fast app
 app = FastAPI()
 model = joblib.load("iris-classifier-week-1_model.joblib")
 
