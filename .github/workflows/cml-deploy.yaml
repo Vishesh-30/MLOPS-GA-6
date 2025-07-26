@@ -1,0 +1,38 @@
+name: CML Continuous Deployment
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+    - name: Configure Docker to use Artifact Registry
+      run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+    - name: Build and Push Docker image
+      run: |
+        docker build -t iris-api .
+        docker tag iris-api us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/iris-repo/iris-api:latest
+        docker push us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/iris-repo/iris-api:latest
+
+    - name: Set up GKE credentials
+      uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: ${{ secrets.CLUSTER_NAME }}
+        location: ${{ secrets.CLUSTER_ZONE }}
+        project_id: ${{ secrets.PROJECT_ID }}
+
+    - name: Deploy to GKE
+      run: kubectl apply -f iris-deployement.yaml
+
